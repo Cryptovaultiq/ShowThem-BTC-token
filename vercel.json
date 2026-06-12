@@ -1,11 +1,6 @@
 {
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
-  "env": {
-    "VITE_MAINNET_RPC_URL": "@vite_mainnet_rpc_url",
-    "VITE_FAKE_BTC_ADDRESS": "@vite_fake_btc_address",
-    "VITE_FAKE_ETH_ADDRESS": "@vite_fake_eth_address"
-  },
   "rewrites": [
     {
       "source": "/(.*)",

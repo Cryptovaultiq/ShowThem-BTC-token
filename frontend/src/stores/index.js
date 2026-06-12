@@ -20,8 +20,17 @@ export const useWeb3Store = create((set) => ({
     
     console.log("🔌 Attempting to connect wallet...");
     console.log("window.ethereum available?", typeof window.ethereum !== "undefined");
+    console.log("Wallet type:", walletType);
     
     try {
+      // WalletConnect is already handled in the component (provider set to window.ethereum)
+      if (walletType === "walletconnect") {
+        // Provider should already be set in window.ethereum by component
+        if (typeof window.ethereum === "undefined") {
+          throw new Error("WalletConnect failed - no provider available");
+        }
+      }
+      
       // Check if any wallet is installed
       if (typeof window.ethereum === "undefined") {
         // If no real wallet but demo mode allowed, use mock/demo account
@@ -30,35 +39,33 @@ export const useWeb3Store = create((set) => ({
           const mockAccount = "0xDEMO0000000000000000000000000000DEMO0001";
           const mockChainId = 1; // Mainnet
           
-          // Create a read-only demo provider (no network calls)
           set({
             account: mockAccount,
-            provider: null, // No provider in demo mode
-            signer: null, // No signer in demo mode (read-only)
+            provider: null,
+            signer: null,
             chainId: mockChainId,
             isConnected: true,
             walletType: "demo",
           });
           
           console.log("✅ DEMO MODE connected! Account:", mockAccount);
-          console.log("⚠️ Demo mode is READ-ONLY. Install MetaMask to enable transactions.");
+          console.log("⚠️ Demo mode is READ-ONLY. Install a wallet to enable transactions.");
           set({ isLoading: false });
           return;
         }
         
-        const errorMsg = "❌ No Web3 wallet detected. Please install MetaMask, Coinbase Wallet, or another Web3 wallet browser extension.";
+        const errorMsg = "❌ No Web3 wallet detected. Please install MetaMask, use WalletConnect, or try Demo Mode.";
         console.error(errorMsg);
         set({ error: errorMsg, isLoading: false });
         return;
       }
       
       console.log("✅ Real wallet detected - connecting to it...");
-      console.log("Wallet type:", window.ethereum.isMetaMask ? "MetaMask" : "Other Web3 Wallet");
+      console.log("Wallet type:", window.ethereum.isMetaMask ? "MetaMask" : "WalletConnect or Other");
 
       let provider;
       let accounts;
 
-      // Try to connect to any available Web3 wallet via window.ethereum
       try {
         console.log("📤 Requesting account access...");
         accounts = await window.ethereum.request({ 
@@ -83,7 +90,7 @@ export const useWeb3Store = create((set) => ({
           signer,
           chainId: Number(network.chainId),
           isConnected: true,
-          walletType: window.ethereum.isMetaMask ? "metamask" : "web3",
+          walletType: walletType === "walletconnect" ? "walletconnect" : (window.ethereum.isMetaMask ? "metamask" : "web3"),
         });
 
         console.log("✅ Wallet connected successfully!");

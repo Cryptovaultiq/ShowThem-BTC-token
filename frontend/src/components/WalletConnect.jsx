@@ -15,6 +15,7 @@ export default function WalletConnect() {
   };
 
   const isDemoMode = account?.includes("DEMO");
+  const isMobile = () => /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent);
 
   const handleConnect = async (useDemo = false) => {
     setShowError(false);
@@ -26,6 +27,12 @@ export default function WalletConnect() {
       console.error("Connection failed:", err);
       setShowError(true);
     }
+  };
+
+  const handleMetaMaskMobile = () => {
+    // Deep link to MetaMask mobile app
+    const appUrl = `https://metamask.app.link/dapp/${window.location.href.replace(/https?:\/\//, '')}`;
+    window.location.href = appUrl;
   };
 
   if (isConnected && account) {
@@ -61,6 +68,20 @@ export default function WalletConnect() {
 
   return (
     <div>
+      {isMobile() && !error && (
+        <div className="mb-4 bg-blue-900 border border-blue-700 rounded-lg p-4">
+          <p className="text-blue-200 text-sm mb-3">📱 <strong>Mobile User?</strong></p>
+          <button
+            onClick={handleMetaMaskMobile}
+            disabled={isLoading}
+            className="w-full px-6 py-3 rounded-lg font-semibold transition-all bg-orange-600 hover:bg-orange-700 text-white mb-2"
+          >
+            🦊 Open in MetaMask Mobile
+          </button>
+          <p className="text-xs text-blue-300 text-center mb-2">or</p>
+        </div>
+      )}
+      
       <button
         onClick={handleConnect}
         disabled={isLoading}
@@ -83,6 +104,18 @@ export default function WalletConnect() {
         )}
       </button>
 
+      {/* Demo Mode - Always Available Option */}
+      {!error && (
+        <button
+          onClick={() => handleConnect(true)}
+          disabled={isLoading}
+          className="w-full mt-3 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-colors text-sm font-semibold flex items-center justify-center gap-2"
+        >
+          <span>👁️</span>
+          Continue as Guest (Demo Mode)
+        </button>
+      )}
+
       {/* Error Display with Demo Mode Option */}
       {error && (showError || isLoading === false) && (
         <div className="mt-4 bg-red-900 border border-red-700 rounded-lg p-4">
@@ -95,11 +128,20 @@ export default function WalletConnect() {
               <div className="mt-3 text-xs text-red-400 space-y-1 mb-4">
                 <p>💡 <strong>Troubleshooting:</strong></p>
                 <ul className="list-disc list-inside ml-2">
-                  <li>Make sure MetaMask or another Web3 wallet extension is installed</li>
-                  <li>Check that the wallet extension is enabled in your browser</li>
-                  <li>Try clicking the wallet icon in your browser toolbar</li>
-                  <li>Refresh the page and try again</li>
-                  <li>Check the browser console (F12) for more details</li>
+                  {isMobile() ? (
+                    <>
+                      <li>Open this link in MetaMask mobile app (see button above)</li>
+                      <li>Or download MetaMask: https://metamask.io</li>
+                      <li>Don't have a wallet? Try Demo Mode below</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>Make sure MetaMask or another Web3 wallet extension is installed</li>
+                      <li>Check that the wallet extension is enabled in your browser</li>
+                      <li>Try clicking the wallet icon in your browser toolbar</li>
+                      <li>Refresh the page and try again</li>
+                    </>
+                  )}
                 </ul>
               </div>
 

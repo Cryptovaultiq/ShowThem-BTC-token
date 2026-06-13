@@ -81,6 +81,18 @@ export default function BalanceCard() {
         <div className="text-3xl font-bold text-white mb-2">{balance.toFixed(8)}</div>
         <div className="text-sm text-blue-200">{selectedToken}</div>
         <div className="text-xs text-blue-300 mt-2">{usdValue}</div>
+        
+        {/* Debug: Show warning if balance is 0 */}
+        {balance === 0 && (
+          <div className="mt-3 p-2 bg-yellow-900 border border-yellow-600 rounded text-yellow-200 text-xs">
+            ⚠️ <strong>Balance is 0</strong> - Check:
+            <ul className="list-disc ml-4 mt-1 text-yellow-300">
+              <li>Network is Ethereum Mainnet</li>
+              <li>Wallet connected correctly</li>
+              <li>Contract address: 0x4B09...aa4 (BTC)</li>
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Gas Balance - Now shows payment token */}

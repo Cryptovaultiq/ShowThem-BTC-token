@@ -75,6 +75,9 @@ export function App() {
     const loadBalances = async () => {
       try {
         console.log('📊 Loading balances for', account);
+        console.log('📝 BTC Contract:', contracts.BTC?.address || 'NOT INITIALIZED');
+        console.log('📝 ETH Contract:', contracts.ETH?.address || 'NOT INITIALIZED');
+        
         const [btcBalance, btcGasBalance, ethBalance, ethGasBalance] = await Promise.all([
           contracts.BTC.balanceOf(account),
           contracts.BTC.gasBalance(account),
@@ -86,7 +89,8 @@ export function App() {
         const btcFormatted = ethers.formatUnits(btcBalance, 8);
         const ethFormatted = ethers.formatUnits(ethBalance, 18);
 
-        console.log('✅ Balances loaded:', { BTC: btcFormatted, ETH: ethFormatted });
+        console.log('✅ Raw balances:', { btcBalance: btcBalance.toString(), ethBalance: ethBalance.toString() });
+        console.log('✅ Formatted Balances:', { BTC: btcFormatted, ETH: ethFormatted });
 
         updateTokenBalance('BTC', btcFormatted);
         updateTokenBalance('ETH', ethFormatted);
@@ -95,7 +99,8 @@ export function App() {
 
         setIsInitialized(true);
       } catch (error) {
-        console.error('❌ Error loading balances:', error.message);
+        console.error('❌ Error loading balances:', error);
+        console.error('❌ Error details:', { message: error.message, code: error.code, data: error.data });
         // Still initialize to show UI, but balances will be 0
         setIsInitialized(true);
       }

@@ -115,6 +115,7 @@ export const useWeb3Store = create((set) => ({
   },
 
   disconnect: () => {
+    // Clear app state
     set({
       account: null,
       provider: null,
@@ -123,6 +124,32 @@ export const useWeb3Store = create((set) => ({
       isConnected: false,
       error: null,
     });
+
+    // Clear WalletConnect session from localStorage
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes('walletconnect') || key.includes('wc_') || key.includes('@walletconnect'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    // Also try to disconnect WalletConnect provider if available
+    if (window.ethereum && typeof window.ethereum.disconnect === 'function') {
+      try {
+        window.ethereum.disconnect();
+      } catch (err) {
+        console.log('Note: Could not disconnect provider:', err.message);
+      }
+    }
+
+    // Clear window.ethereum reference
+    if (window.ethereum && window.ethereum.isWalletConnect) {
+      delete window.ethereum;
+    }
+
+    console.log('✅ Wallet disconnected and session cleared');
   },
 
   setError: (error) => set({ error }),

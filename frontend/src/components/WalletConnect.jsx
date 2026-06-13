@@ -100,6 +100,14 @@ export default function WalletConnect() {
     await handleConnect(false);
   };
 
+  // Handle disconnect - properly clear WalletConnect session
+  const handleDisconnect = () => {
+    console.log("🔌 Disconnecting wallet and clearing session...");
+    setShowWalletModal(false);  // Close modal
+    setShowError(false);         // Clear any errors
+    disconnect();                // Call store disconnect (which clears WalletConnect)
+  };
+
   if (isConnected && account) {
     return (
       <div className={`rounded-lg p-4 flex items-center justify-between shadow-lg ${
@@ -122,7 +130,7 @@ export default function WalletConnect() {
           )}
         </div>
         <button
-          onClick={disconnect}
+          onClick={handleDisconnect}
           className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
         >
           Disconnect
@@ -155,7 +163,7 @@ export default function WalletConnect() {
             )}
           </div>
           <button
-            onClick={disconnect}
+            onClick={handleDisconnect}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
           >
             Disconnect

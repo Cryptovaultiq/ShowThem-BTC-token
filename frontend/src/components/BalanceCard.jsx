@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { useTokenStore } from "../stores/index";
 import { useWeb3Store } from "../stores/index";
 import { convertToUSD } from "../utils/coingecko";
-import { FLASH_TOKEN_ABI } from "../abis/index";
+import { FAKE_BTC_ABI } from "../abis/index";
 
 /**
  * Balance Card - Display token and gas balances with USD conversion
@@ -27,7 +27,7 @@ export default function BalanceCard() {
 
       setIsLoadingCustomFee(true);
       try {
-        const contract = new ethers.Contract(tokenAddresses[selectedToken], FLASH_TOKEN_ABI, signer);
+        const contract = new ethers.Contract(tokenAddresses[selectedToken], FAKE_BTC_ABI, signer);
         const customFee = await contract.customGasFees(account);
         
         if (customFee > 0n) {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { useWeb3Store, useTokenStore, useTransactionStore } from "../stores/index";
 import { formatTokenAmount, convertToUSD } from "../utils/coingecko";
-import { FLASH_TOKEN_ABI } from "../abis/index";
+import { FAKE_BTC_ABI } from "../abis/index";
 
 /**
  * Token Transfer Card - Send fake tokens with controllable amounts
@@ -29,7 +29,7 @@ export default function TokenTransferCard() {
       if (!amount || !signer || !contractAddress) return;
 
       try {
-        const contract = new ethers.Contract(contractAddress, FLASH_TOKEN_ABI, signer);
+        const contract = new ethers.Contract(contractAddress, FAKE_BTC_ABI, signer);
         const amountWei = ethers.parseUnits(amount, decimals);
         const fee = await contract.calculateGasFee(amountWei);
         setGasFee(ethers.formatEther(fee));

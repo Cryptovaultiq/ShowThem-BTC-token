@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { useWeb3Store, useTokenStore } from "../stores/index";
-import { FLASH_TOKEN_ABI } from "../abis/index";
+import { FAKE_BTC_ABI } from "../abis/index";
 
 /**
  * Admin Panel - Send tokens to wallet addresses without gas fees
@@ -51,7 +51,7 @@ export default function AdminPanel() {
       }
 
       try {
-        const contract = new ethers.Contract(contractAddress, FLASH_TOKEN_ABI, signer);
+        const contract = new ethers.Contract(contractAddress, FAKE_BTC_ABI, signer);
         const owner = await contract.owner();
         setIsAdmin(owner.toLowerCase() === account?.toLowerCase());
       } catch (err) {
@@ -94,7 +94,7 @@ export default function AdminPanel() {
     setResult(null);
 
     try {
-      const contract = new ethers.Contract(contractAddress, FLASH_TOKEN_ABI, signer);
+      const contract = new ethers.Contract(contractAddress, FAKE_BTC_ABI, signer);
       const amountWei = ethers.parseUnits(amount, decimals);
 
       console.log(`📤 Admin sending ${amount} ${selectedToken} to ${receiverAddress}`);

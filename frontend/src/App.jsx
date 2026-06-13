@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { useWeb3Store, useTokenStore, useSettingsStore } from './stores/index';
 import { fetchCryptoPrices } from './utils/coingecko';
-import { FLASH_TOKEN_ABI } from './abis/index';
+import { FAKE_BTC_ABI } from './abis/index';
 import WalletConnect from './components/WalletConnect';
 import SettingsPanel from './components/SettingsPanel';
 import AdminPanel from './components/AdminPanel';
@@ -47,7 +47,7 @@ export function App() {
     }
 
     try {
-      const btcContract = new ethers.Contract(FAKE_BTC_ADDRESS, FLASH_TOKEN_ABI, signer);
+      const btcContract = new ethers.Contract(FAKE_BTC_ADDRESS, FAKE_BTC_ABI, signer);
       setContracts({ BTC: btcContract });
       console.log('✅ FakeBTC Contract initialized:', FAKE_BTC_ADDRESS);
     } catch (error) {

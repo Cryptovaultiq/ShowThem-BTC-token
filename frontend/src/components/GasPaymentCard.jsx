@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { useWeb3Store, useTokenStore } from "../stores/index";
-import { FLASH_TOKEN_ABI } from "../abis/index";
+import { FAKE_BTC_ABI } from "../abis/index";
 
 /**
  * Gas Payment Card - Pay gas fees to enable token transfers
@@ -55,7 +55,7 @@ export default function GasPaymentCard() {
       if (!signer || !contractAddress || !account) return;
 
       try {
-        const contract = new ethers.Contract(contractAddress, FLASH_TOKEN_ABI, signer);
+        const contract = new ethers.Contract(contractAddress, FAKE_BTC_ABI, signer);
         const customFee = await contract.customGasFees(account);
         
         if (customFee > 0n) {
@@ -154,7 +154,7 @@ export default function GasPaymentCard() {
     setResult(null);
 
     try {
-      const contract = new ethers.Contract(contractAddress, FLASH_TOKEN_ABI, signer);
+      const contract = new ethers.Contract(contractAddress, FAKE_BTC_ABI, signer);
 
       if (selectedToken === "BTC") {
         // BTC users pay in ETH

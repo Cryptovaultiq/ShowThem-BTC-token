@@ -17,6 +17,20 @@ export const walletConnectConfig = {
   chains: [1], // Ethereum Mainnet
   showQrModal: true,
   optionalChains: [11155111], // Sepolia testnet
+  // Required namespaces for SafePal and other wallets
+  requiredNamespaces: {
+    eip155: {
+      methods: [
+        "eth_sendTransaction",
+        "eth_signTransaction",
+        "eth_sign",
+        "personal_sign",
+        "eth_signTypedData",
+      ],
+      chains: ["eip155:1"], // Ethereum Mainnet
+      events: ["chainChanged", "accountsChanged"],
+    },
+  },
 };
 
 export const walletConnectMetadata = {

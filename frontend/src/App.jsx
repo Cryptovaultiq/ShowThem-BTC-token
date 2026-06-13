@@ -21,41 +21,39 @@ export function App() {
   const { autoRefresh, refreshInterval } = useSettingsStore();
 
   const [network, setNetwork] = useState(null);
-  const [contracts, setContracts] = useState({ BTC: null, ETH: null });
+  const [contracts, setContracts] = useState({ BTC: null });
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Set contract addresses in store
   useEffect(() => {
-    if (FAKE_BTC_ADDRESS && FAKE_ETH_ADDRESS) {
+    if (FAKE_BTC_ADDRESS) {
       updateTokenBalance('BTC', '0');
-      updateTokenBalance('ETH', '0');
     }
   }, []);
 
-  // Initialize contracts
+  // Initialize contracts (BTC only for now)
   useEffect(() => {
     // Check if addresses are valid (not placeholders or empty)
     const isValidAddress = (addr) => {
       return addr && addr.startsWith('0x') && addr.length === 42 && addr !== '0x...';
     };
 
-    if (!signer || !isValidAddress(FAKE_BTC_ADDRESS) || !isValidAddress(FAKE_ETH_ADDRESS)) {
-      setContracts({ BTC: null, ETH: null });
-      if (FAKE_BTC_ADDRESS === '0x...' || FAKE_ETH_ADDRESS === '0x...') {
-        console.log('⚠️ Contract addresses not configured. Update VITE_FAKE_BTC_ADDRESS and VITE_FAKE_ETH_ADDRESS in frontend/.env');
+    if (!signer || !isValidAddress(FAKE_BTC_ADDRESS)) {
+      setContracts({ BTC: null });
+      if (FAKE_BTC_ADDRESS === '0x...') {
+        console.log('⚠️ Contract address not configured. Update VITE_FAKE_BTC_ADDRESS in frontend/.env');
       }
       return;
     }
 
     try {
       const btcContract = new ethers.Contract(FAKE_BTC_ADDRESS, FLASH_TOKEN_ABI, signer);
-      const ethContract = new ethers.Contract(FAKE_ETH_ADDRESS, FLASH_TOKEN_ABI, signer);
-      setContracts({ BTC: btcContract, ETH: ethContract });
-      console.log('✅ Contracts initialized:', { BTC: FAKE_BTC_ADDRESS, ETH: FAKE_ETH_ADDRESS });
+      setContracts({ BTC: btcContract });
+      console.log('✅ FakeBTC Contract initialized:', FAKE_BTC_ADDRESS);
     } catch (error) {
-      console.error('Failed to initialize contracts:', error);
+      console.error('Failed to initialize FakeBTC contract:', error);
     }
-  }, [signer, FAKE_BTC_ADDRESS, FAKE_ETH_ADDRESS]);
+  }, [signer, FAKE_BTC_ADDRESS]);
 
   // Load token balances
   useEffect(() => {
@@ -67,40 +65,53 @@ export function App() {
     }
 
     // Check if contracts are initialized
-    if (!account || !isConnected || !contracts.BTC || !contracts.ETH) {
+    if (!account || !isConnected || !contracts.BTC) {
       setIsInitialized(false);
       return;
     }
 
     const loadBalances = async () => {
       try {
-        console.log('📊 Loading balances for', account);
-        console.log('📝 BTC Contract:', contracts.BTC?.address || 'NOT INITIALIZED');
-        console.log('📝 ETH Contract:', contracts.ETH?.address || 'NOT INITIALIZED');
+        console.log('📊 Loading FakeBTC balance for', account);
+        console.log('🔗 Network:', network?.name, 'Chain ID:', network?.chainId);
+        console.log('📝 BTC Contract Address:', FAKE_BTC_ADDRESS);
         
-        const [btcBalance, btcGasBalance, ethBalance, ethGasBalance] = await Promise.all([
+        // Check if contract has code at that address
+        if (provider) {
+          const btcCode = await provider.getCode(FAKE_BTC_ADDRESS);
+          console.log('🔍 BTC Contract has code on-chain:', btcCode !== '0x');
+          if (btcCode === '0x') {
+            console.warn('⚠️ ERROR: No contract code at BTC address on current network!');
+            console.warn('⚠️ Make sure you are connected to Ethereum Mainnet (Chain ID: 1)');
+            setIsInitialized(true);
+            return;
+          }
+        }
+        
+        console.log('📤 Calling balanceOf() on BTC contract...');
+        
+        const [btcBalance, btcGasBalance] = await Promise.all([
           contracts.BTC.balanceOf(account),
           contracts.BTC.gasBalance(account),
-          contracts.ETH.balanceOf(account),
-          contracts.ETH.gasBalance(account),
         ]);
 
-        // Format balances (BTC has 8 decimals, ETH has 18)
+        // Format balance (BTC has 8 decimals)
         const btcFormatted = ethers.formatUnits(btcBalance, 8);
-        const ethFormatted = ethers.formatUnits(ethBalance, 18);
 
-        console.log('✅ Raw balances:', { btcBalance: btcBalance.toString(), ethBalance: ethBalance.toString() });
-        console.log('✅ Formatted Balances:', { BTC: btcFormatted, ETH: ethFormatted });
+        console.log('✅ Raw BTC balance:', btcBalance.toString());
+        console.log('✅ Formatted BTC Balance:', btcFormatted);
 
         updateTokenBalance('BTC', btcFormatted);
-        updateTokenBalance('ETH', ethFormatted);
         updateGasBalance('BTC', btcGasBalance.toString());
-        updateGasBalance('ETH', ethGasBalance.toString());
 
         setIsInitialized(true);
       } catch (error) {
-        console.error('❌ Error loading balances:', error);
-        console.error('❌ Error details:', { message: error.message, code: error.code, data: error.data });
+        console.error('❌ Error loading BTC balance:', error.message);
+        console.error('❌ Full error:', error);
+        console.log('💡 Troubleshooting:');
+        console.log('  1. Are you connected to Ethereum Mainnet (Chain ID 1)?');
+        console.log('  2. Is the contract address correct?', FAKE_BTC_ADDRESS);
+        console.log('  3. Can you access it on Etherscan?', `https://etherscan.io/address/${FAKE_BTC_ADDRESS}`);
         // Still initialize to show UI, but balances will be 0
         setIsInitialized(true);
       }

@@ -8,36 +8,68 @@ import { walletConnectConfig, walletConnectMetadata } from "../utils/walletConne
  * Supports WalletConnect, detected wallets, and demo mode fallback
  */
 
-// Detect installed wallets
+// Detect installed wallet extensions (comprehensive coverage)
 function detectWallets() {
   const wallets = [];
+  const eth = window.ethereum;
 
-  // MetaMask
-  if (window.ethereum?.isMetaMask) {
-    wallets.push({ name: "MetaMask", icon: "🦊", id: "metamask" });
-  }
-
-  // Coinbase Wallet
-  if (window.ethereum?.isCoinbaseWallet) {
-    wallets.push({ name: "Coinbase Wallet", icon: "⬜", id: "coinbase" });
-  }
-
-  // Trust Wallet
-  if (window.ethereum?.isTrust) {
-    wallets.push({ name: "Trust Wallet", icon: "🔐", id: "trust" });
-  }
-
-  // OKX Wallet
-  if (window.okxwallet || window.ethereum?.isOkxWallet) {
-    wallets.push({ name: "OKX Wallet", icon: "🎭", id: "okx" });
+  // EVM Provider Detection
+  if (eth) {
+    if (eth.isMetaMask) wallets.push({ name: "MetaMask", icon: "🦊", id: "metamask" });
+    if (eth.isCoinbaseWallet) wallets.push({ name: "Coinbase Wallet", icon: "⬜", id: "coinbase" });
+    if (eth.isTrust) wallets.push({ name: "Trust Wallet", icon: "🔐", id: "trust" });
+    if (eth.isOkxWallet) wallets.push({ name: "OKX Wallet", icon: "🎭", id: "okx" });
+    if (eth.isRabby) wallets.push({ name: "Rabby", icon: "🐰", id: "rabby" });
+    if (eth.isBraveWallet) wallets.push({ name: "Brave Wallet", icon: "⚔️", id: "brave" });
+    if (eth.isBitKeep || eth.isBitgetWallet) wallets.push({ name: "Bitget Wallet", icon: "🔑", id: "bitget" });
+    if (eth.isTokenPocket) wallets.push({ name: "TokenPocket", icon: "🎫", id: "tokenpocket" });
+    if (eth.isMathWallet) wallets.push({ name: "MathWallet", icon: "📐", id: "mathwallet" });
+    if (eth.isOneInchIOSWallet) wallets.push({ name: "1inch Wallet", icon: "🔄", id: "1inch" });
+    if (eth.isSafePal) wallets.push({ name: "SafePal (Desktop)", icon: "🛡️", id: "safepal" });
+    if (eth.isTally) wallets.push({ name: "Taho (Tally)", icon: "📊", id: "taho" });
   }
 
   // Phantom (EVM)
-  if (window.ethereum?.isPhantom) {
-    wallets.push({ name: "Phantom", icon: "👻", id: "phantom" });
+  if (window.phantom?.ethereum) {
+    wallets.push({ name: "Phantom (EVM)", icon: "👻", id: "phantom-evm" });
   }
 
-  return wallets;
+  // Phantom (Solana)
+  if (window.phantom?.solana?.isPhantom) {
+    wallets.push({ name: "Phantom (Solana)", icon: "👻", id: "phantom-solana" });
+  }
+
+  // Solflare
+  if (window.solflare?.isSolflare) {
+    wallets.push({ name: "Solflare", icon: "☀️", id: "solflare" });
+  }
+
+  // Backpack
+  if (window.backpack?.isBackpack) {
+    wallets.push({ name: "Backpack", icon: "🎒", id: "backpack" });
+  }
+
+  // Keplr
+  if (window.keplr) {
+    wallets.push({ name: "Keplr", icon: "🌌", id: "keplr" });
+  }
+
+  // Leap
+  if (window.leap) {
+    wallets.push({ name: "Leap", icon: "🦘", id: "leap" });
+  }
+
+  // XDEFI
+  if (window.xfi) {
+    wallets.push({ name: "XDEFI", icon: "🔗", id: "xdefi" });
+  }
+
+  // Remove duplicates based on name
+  const uniqueWallets = Array.from(new Map(wallets.map(w => [w.name, w])).values());
+
+  console.log("🔍 Detected wallets:", uniqueWallets.map(w => w.name).join(", ") || "None");
+
+  return uniqueWallets;
 }
 
 export default function WalletConnect() {

@@ -4,7 +4,7 @@ require("solidity-coverage");
 require("dotenv").config();
 
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "";
-const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL || "";
+const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL || "https://eth-mainnet.g.alchemy.com/v2/4wQ45tWR07aSNHdEcEw5d";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 
 module.exports = {
@@ -44,5 +44,10 @@ module.exports = {
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts",
+  },
+  etherscan: {
+    apiKey: {
+      mainnet: "DCIMH4YNP4T6IVXPBTC8RPHCHKHI9Y9TCA",
+    },
   },
 };

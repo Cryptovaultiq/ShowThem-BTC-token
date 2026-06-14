@@ -91,6 +91,7 @@ export function App() {
     // Check if contracts are initialized
     const selectedContract = contracts[selectedToken];
     if (!account || !isConnected || !selectedContract) {
+      console.log(`⚠️ Contract not ready - Account: ${account}, Connected: ${isConnected}, Contract exists: ${!!selectedContract}`);
       setIsInitialized(selectedContract ? true : false);
       return;
     }
@@ -103,6 +104,7 @@ export function App() {
         console.log(`📊 Loading ${selectedToken} balance for`, account);
         console.log('🔗 Network:', network?.name, 'Chain ID:', network?.chainId);
         console.log(`📝 ${selectedToken} Contract Address:`, contractAddress);
+        console.log(`📝 Signer available: ${!!signer}`);
         
         // Create a timeout promise
         const timeoutPromise = new Promise((_, reject) => 
@@ -112,9 +114,10 @@ export function App() {
         // Check if contract has code at that address
         if (provider) {
           try {
+            console.log(`🔍 Checking if contract exists at address...`);
             const codePromise = provider.getCode(contractAddress);
             const code = await Promise.race([codePromise, timeoutPromise]);
-            console.log(`🔍 ${selectedToken} Contract has code on-chain:`, code !== '0x');
+            console.log(`🔍 Contract bytecode length:`, code.length, `Has code: ${code !== '0x'}`);
             if (code === '0x') {
               console.warn(`⚠️ ERROR: No contract code at ${selectedToken} address on current network!`);
               console.warn('⚠️ Make sure you are connected to Ethereum Mainnet (Chain ID: 1)');
@@ -129,11 +132,22 @@ export function App() {
         }
         
         console.log(`📤 Calling balanceOf() on ${selectedToken} contract...`);
+        console.log(`⏱️ Starting balance load with 10 second timeout...`);
         
         // Wrap balance calls with timeout
         const balancePromise = Promise.all([
-          selectedContract.balanceOf(account),
-          selectedContract.gasBalance(account),
+          (async () => {
+            console.log(`📤 Calling balanceOf for account: ${account}`);
+            const bal = await selectedContract.balanceOf(account);
+            console.log(`✅ balanceOf returned:`, bal.toString());
+            return bal;
+          })(),
+          (async () => {
+            console.log(`📤 Calling gasBalance for account: ${account}`);
+            const gas = await selectedContract.gasBalance(account);
+            console.log(`✅ gasBalance returned:`, gas.toString());
+            return gas;
+          })(),
         ]);
         
         const [balance, gasBalance] = await Promise.race([
@@ -154,6 +168,7 @@ export function App() {
       } catch (error) {
         console.error(`❌ Error loading ${selectedToken} balance:`, error.message);
         console.error('❌ Full error:', error);
+        console.error('❌ Error stack:', error.stack);
         console.log('💡 Troubleshooting:');
         console.log('  1. Are you connected to Ethereum Mainnet (Chain ID 1)?');
         const addr = selectedToken === "BTC" ? FAKE_BTC_ADDRESS : SOLANA_TOKEN_ADDRESS;

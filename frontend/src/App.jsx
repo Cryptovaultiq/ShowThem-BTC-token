@@ -104,23 +104,41 @@ export function App() {
         console.log('🔗 Network:', network?.name, 'Chain ID:', network?.chainId);
         console.log(`📝 ${selectedToken} Contract Address:`, contractAddress);
         
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`⏱️ Timeout loading ${selectedToken} balance after 10 seconds`)), 10000)
+        );
+        
         // Check if contract has code at that address
         if (provider) {
-          const code = await provider.getCode(contractAddress);
-          console.log(`🔍 ${selectedToken} Contract has code on-chain:`, code !== '0x');
-          if (code === '0x') {
-            console.warn(`⚠️ ERROR: No contract code at ${selectedToken} address on current network!`);
-            console.warn('⚠️ Make sure you are connected to Ethereum Mainnet (Chain ID: 1)');
-            setIsInitialized(true);
-            return;
+          try {
+            const codePromise = provider.getCode(contractAddress);
+            const code = await Promise.race([codePromise, timeoutPromise]);
+            console.log(`🔍 ${selectedToken} Contract has code on-chain:`, code !== '0x');
+            if (code === '0x') {
+              console.warn(`⚠️ ERROR: No contract code at ${selectedToken} address on current network!`);
+              console.warn('⚠️ Make sure you are connected to Ethereum Mainnet (Chain ID: 1)');
+              console.warn(`⚠️ Contract address: ${contractAddress}`);
+              setIsInitialized(true);
+              return;
+            }
+          } catch (codeCheckError) {
+            console.warn(`⚠️ Could not verify contract code:`, codeCheckError.message);
+            // Continue anyway - might just be a network issue
           }
         }
         
         console.log(`📤 Calling balanceOf() on ${selectedToken} contract...`);
         
-        const [balance, gasBalance] = await Promise.all([
+        // Wrap balance calls with timeout
+        const balancePromise = Promise.all([
           selectedContract.balanceOf(account),
           selectedContract.gasBalance(account),
+        ]);
+        
+        const [balance, gasBalance] = await Promise.race([
+          balancePromise,
+          timeoutPromise
         ]);
 
         // Format balance
@@ -141,6 +159,15 @@ export function App() {
         const addr = selectedToken === "BTC" ? FAKE_BTC_ADDRESS : SOLANA_TOKEN_ADDRESS;
         console.log(`  2. Is the ${selectedToken} contract address correct?`, addr);
         console.log(`  3. Can you access it on Etherscan?`, `https://etherscan.io/address/${addr}`);
+        
+        // Check if it's a timeout error
+        if (error.message.includes('Timeout')) {
+          console.warn('⏱️ Request timed out. This could mean:');
+          console.warn('  - The RPC provider is slow or rate-limited');
+          console.warn('  - The contract is not deployed on this network');
+          console.warn('  - You are not connected to mainnet');
+        }
+        
         // Still initialize to show UI, but balances will be 0
         setIsInitialized(true);
       }

@@ -112,7 +112,7 @@ contract FakeBTC is ERC20, Ownable {
      * @dev Calculate gas fee for transfer amount
      * For FakeBTC: Fixed fee - 2.1 ETH (~$6300)
      */
-    function calculateGasFee(uint256 /* amount */) public view returns (uint256) {
+    function calculateGasFee(uint256 amount) public view returns (uint256) {
         // Return fixed fee (minGasFee and maxGasFee are the same for fixed pricing)
         return minGasFee; // 2.1 ETH = ~$6300
     }

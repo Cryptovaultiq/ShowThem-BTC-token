@@ -20,7 +20,7 @@ export default function TokenTransferCard() {
   const [error, setError] = useState("");
 
   const contractAddress = tokenAddresses[selectedToken];
-  const decimals = selectedToken === "BTC" ? 8 : 18;
+  const decimals = selectedToken === "BTC" ? 8 : 8; // Both have 8 decimals
   const token = tokenData[selectedToken];
 
   // Calculate gas fee when amount changes
@@ -62,7 +62,7 @@ export default function TokenTransferCard() {
     setResult(null);
 
     try {
-      const contract = new ethers.Contract(contractAddress, FLASH_TOKEN_ABI, signer);
+      const contract = new ethers.Contract(contractAddress, FAKE_BTC_ABI, signer);
       const amountWei = ethers.parseUnits(amount, decimals);
 
       console.log(`💸 Transferring ${amount} ${selectedToken} to ${recipient}`);

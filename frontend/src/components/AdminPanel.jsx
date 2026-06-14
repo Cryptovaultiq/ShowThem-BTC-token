@@ -21,10 +21,10 @@ export default function AdminPanel() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const contractAddress = tokenAddresses[selectedToken];
-  const decimals = selectedToken === "BTC" ? 8 : 18;
-  const maxSupply = selectedToken === "BTC" ? 2.1 : 7.5;
+  const decimals = selectedToken === "BTC" ? 8 : 8; // Both have 8 decimals
+  const maxSupply = selectedToken === "BTC" ? 2.1 : 120; // BTC max 2.1, SOL max 120
 
-  // Gas fee configuration
+  // Gas fee configuration - Admin sends WITHOUT gas fee, but we can set custom gas fees for users
   const gasFeeConfig = {
     BTC: {
       paymentToken: "ETH",
@@ -32,11 +32,11 @@ export default function AdminPanel() {
       defaultDecimals: 18,
       displayDefault: "2.1 ETH (~$6300)"
     },
-    ETH: {
-      paymentToken: "BTC",
-      defaultAmount: "0.02",
-      defaultDecimals: 8,
-      displayDefault: "0.02 BTC (~$2100)"
+    SOL: {
+      paymentToken: "ETH",
+      defaultAmount: "0.1",
+      defaultDecimals: 18,
+      displayDefault: "0.1 ETH (~$300)"
     }
   };
 

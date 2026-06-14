@@ -31,8 +31,8 @@ export default function BalanceCard() {
         const customFee = await contract.customGasFees(account);
         
         if (customFee > 0n) {
-          const decimals = selectedToken === "BTC" ? 18 : 8;
-          const customAmount = ethers.formatUnits(customFee, decimals);
+          // Gas fees are always in ETH (18 decimals)
+          const customAmount = ethers.formatUnits(customFee, 18);
           setCustomGasFee(customAmount);
         } else {
           setCustomGasFee(null);
@@ -63,11 +63,11 @@ export default function BalanceCard() {
       usdValue: "~$6300",
       description: "Pay ETH to transfer BTC"
     },
-    ETH: {
-      currency: "BTC",
-      amount: "0.02",
-      usdValue: "~$2100",
-      description: "Pay BTC to transfer ETH"
+    SOL: {
+      currency: "ETH",
+      amount: "0.1",
+      usdValue: "~$300",
+      description: "Pay ETH to transfer SOL"
     }
   };
 

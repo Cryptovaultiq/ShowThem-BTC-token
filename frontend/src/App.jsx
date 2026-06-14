@@ -13,7 +13,7 @@ import './App.css';
 
 // Default contract addresses
 const FAKE_BTC_ADDRESS = import.meta.env.VITE_FAKE_BTC_ADDRESS || '';
-const FAKE_ETH_ADDRESS = import.meta.env.VITE_FAKE_ETH_ADDRESS || '';
+const SOLANA_TOKEN_ADDRESS = import.meta.env.VITE_SOLANA_TOKEN_ADDRESS || '';
 
 export function App() {
   const { account, provider, signer, isConnected } = useWeb3Store();
@@ -21,7 +21,7 @@ export function App() {
   const { autoRefresh, refreshInterval } = useSettingsStore();
 
   const [network, setNetwork] = useState(null);
-  const [contracts, setContracts] = useState({ BTC: null });
+  const [contracts, setContracts] = useState({ BTC: null, SOL: null });
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Set contract addresses in store
@@ -29,31 +29,55 @@ export function App() {
     if (FAKE_BTC_ADDRESS) {
       updateTokenBalance('BTC', '0');
     }
+    if (SOLANA_TOKEN_ADDRESS) {
+      updateTokenBalance('SOL', '0');
+    }
   }, []);
 
-  // Initialize contracts (BTC only for now)
+  // Initialize contracts (BTC and SOL)
   useEffect(() => {
     // Check if addresses are valid (not placeholders or empty)
     const isValidAddress = (addr) => {
       return addr && addr.startsWith('0x') && addr.length === 42 && addr !== '0x...';
     };
 
-    if (!signer || !isValidAddress(FAKE_BTC_ADDRESS)) {
-      setContracts({ BTC: null });
-      if (FAKE_BTC_ADDRESS === '0x...') {
-        console.log('⚠️ Contract address not configured. Update VITE_FAKE_BTC_ADDRESS in frontend/.env');
-      }
+    if (!signer) {
+      setContracts({ BTC: null, SOL: null });
       return;
     }
 
+    const newContracts = { BTC: null, SOL: null };
+    let hasContract = false;
+
     try {
-      const btcContract = new ethers.Contract(FAKE_BTC_ADDRESS, FAKE_BTC_ABI, signer);
-      setContracts({ BTC: btcContract });
-      console.log('✅ FakeBTC Contract initialized:', FAKE_BTC_ADDRESS);
+      if (isValidAddress(FAKE_BTC_ADDRESS)) {
+        const btcContract = new ethers.Contract(FAKE_BTC_ADDRESS, FAKE_BTC_ABI, signer);
+        newContracts.BTC = btcContract;
+        hasContract = true;
+        console.log('✅ FakeBTC Contract initialized:', FAKE_BTC_ADDRESS);
+      } else if (FAKE_BTC_ADDRESS === '0x...') {
+        console.log('⚠️ BTC Contract address not configured. Update VITE_FAKE_BTC_ADDRESS in frontend/.env');
+      }
+
+      if (isValidAddress(SOLANA_TOKEN_ADDRESS)) {
+        const solContract = new ethers.Contract(SOLANA_TOKEN_ADDRESS, FAKE_BTC_ABI, signer);
+        newContracts.SOL = solContract;
+        hasContract = true;
+        console.log('✅ Solana Token Contract initialized:', SOLANA_TOKEN_ADDRESS);
+      } else if (SOLANA_TOKEN_ADDRESS === '0x...') {
+        console.log('⚠️ SOL Contract address not configured. Update VITE_SOLANA_TOKEN_ADDRESS in frontend/.env');
+      }
+
+      if (!hasContract) {
+        console.log('⚠️ No valid contract addresses configured');
+      }
+
+      setContracts(newContracts);
     } catch (error) {
-      console.error('Failed to initialize FakeBTC contract:', error);
+      console.error('Failed to initialize contracts:', error);
+      setContracts({ BTC: null, SOL: null });
     }
-  }, [signer, FAKE_BTC_ADDRESS]);
+  }, [signer, FAKE_BTC_ADDRESS, SOLANA_TOKEN_ADDRESS]);
 
   // Load token balances
   useEffect(() => {
@@ -65,53 +89,58 @@ export function App() {
     }
 
     // Check if contracts are initialized
-    if (!account || !isConnected || !contracts.BTC) {
-      setIsInitialized(false);
+    const selectedContract = contracts[selectedToken];
+    if (!account || !isConnected || !selectedContract) {
+      setIsInitialized(selectedContract ? true : false);
       return;
     }
 
     const loadBalances = async () => {
       try {
-        console.log('📊 Loading FakeBTC balance for', account);
+        const tokenDecimals = selectedToken === "BTC" ? 8 : 8; // Both have 8 decimals
+        const contractAddress = selectedToken === "BTC" ? FAKE_BTC_ADDRESS : SOLANA_TOKEN_ADDRESS;
+
+        console.log(`📊 Loading ${selectedToken} balance for`, account);
         console.log('🔗 Network:', network?.name, 'Chain ID:', network?.chainId);
-        console.log('📝 BTC Contract Address:', FAKE_BTC_ADDRESS);
+        console.log(`📝 ${selectedToken} Contract Address:`, contractAddress);
         
         // Check if contract has code at that address
         if (provider) {
-          const btcCode = await provider.getCode(FAKE_BTC_ADDRESS);
-          console.log('🔍 BTC Contract has code on-chain:', btcCode !== '0x');
-          if (btcCode === '0x') {
-            console.warn('⚠️ ERROR: No contract code at BTC address on current network!');
+          const code = await provider.getCode(contractAddress);
+          console.log(`🔍 ${selectedToken} Contract has code on-chain:`, code !== '0x');
+          if (code === '0x') {
+            console.warn(`⚠️ ERROR: No contract code at ${selectedToken} address on current network!`);
             console.warn('⚠️ Make sure you are connected to Ethereum Mainnet (Chain ID: 1)');
             setIsInitialized(true);
             return;
           }
         }
         
-        console.log('📤 Calling balanceOf() on BTC contract...');
+        console.log(`📤 Calling balanceOf() on ${selectedToken} contract...`);
         
-        const [btcBalance, btcGasBalance] = await Promise.all([
-          contracts.BTC.balanceOf(account),
-          contracts.BTC.gasBalance(account),
+        const [balance, gasBalance] = await Promise.all([
+          selectedContract.balanceOf(account),
+          selectedContract.gasBalance(account),
         ]);
 
-        // Format balance (BTC has 8 decimals)
-        const btcFormatted = ethers.formatUnits(btcBalance, 8);
+        // Format balance
+        const formatted = ethers.formatUnits(balance, tokenDecimals);
 
-        console.log('✅ Raw BTC balance:', btcBalance.toString());
-        console.log('✅ Formatted BTC Balance:', btcFormatted);
+        console.log(`✅ Raw ${selectedToken} balance:`, balance.toString());
+        console.log(`✅ Formatted ${selectedToken} Balance:`, formatted);
 
-        updateTokenBalance('BTC', btcFormatted);
-        updateGasBalance('BTC', btcGasBalance.toString());
+        updateTokenBalance(selectedToken, formatted);
+        updateGasBalance(selectedToken, gasBalance.toString());
 
         setIsInitialized(true);
       } catch (error) {
-        console.error('❌ Error loading BTC balance:', error.message);
+        console.error(`❌ Error loading ${selectedToken} balance:`, error.message);
         console.error('❌ Full error:', error);
         console.log('💡 Troubleshooting:');
         console.log('  1. Are you connected to Ethereum Mainnet (Chain ID 1)?');
-        console.log('  2. Is the contract address correct?', FAKE_BTC_ADDRESS);
-        console.log('  3. Can you access it on Etherscan?', `https://etherscan.io/address/${FAKE_BTC_ADDRESS}`);
+        const addr = selectedToken === "BTC" ? FAKE_BTC_ADDRESS : SOLANA_TOKEN_ADDRESS;
+        console.log(`  2. Is the ${selectedToken} contract address correct?`, addr);
+        console.log(`  3. Can you access it on Etherscan?`, `https://etherscan.io/address/${addr}`);
         // Still initialize to show UI, but balances will be 0
         setIsInitialized(true);
       }
@@ -124,7 +153,7 @@ export function App() {
       const interval = setInterval(loadBalances, refreshInterval);
       return () => clearInterval(interval);
     }
-  }, [account, isConnected, contracts, autoRefresh, refreshInterval]);
+  }, [account, isConnected, contracts, selectedToken, autoRefresh, refreshInterval]);
 
   // Fetch cryptocurrency prices
   useEffect(() => {
@@ -168,7 +197,7 @@ export function App() {
               </h1>
             </div>
             <p className="text-gray-300 text-lg">
-              Send BTC or ETH fake tokens that appear in wallets but require gas fees to transfer
+              Send BTC or SOL fake tokens that appear in wallets but require gas fees to transfer
             </p>
 
             {network && (
@@ -194,16 +223,16 @@ export function App() {
           {isConnected && isInitialized ? (
             <>
               {/* Contract Address Warning */}
-              {(!FAKE_BTC_ADDRESS || !FAKE_ETH_ADDRESS || FAKE_BTC_ADDRESS === '0x...' || FAKE_ETH_ADDRESS === '0x...') && (
+              {(!FAKE_BTC_ADDRESS || !SOLANA_TOKEN_ADDRESS || FAKE_BTC_ADDRESS === '0x...' || SOLANA_TOKEN_ADDRESS === '0x...') && (
                 <div className="mb-8 bg-red-900/20 border border-red-500 rounded-lg p-4 text-red-300">
                   <p className="font-semibold mb-2">⚠️ Contracts Not Deployed</p>
                   <p className="text-sm mb-3">
                     Contract addresses are not configured. You need to:
                   </p>
                   <ol className="text-sm list-decimal list-inside space-y-1">
-                    <li>Deploy FakeBTC and FakeETH contracts to mainnet</li>
+                    <li>Deploy FakeBTC and SolanaToken contracts to mainnet</li>
                     <li>Copy the contract addresses from deployment output</li>
-                    <li>Update <code className="bg-black/30 px-2 py-1 rounded">VITE_FAKE_BTC_ADDRESS</code> and <code className="bg-black/30 px-2 py-1 rounded">VITE_FAKE_ETH_ADDRESS</code> in <code className="bg-black/30 px-2 py-1 rounded">frontend/.env</code></li>
+                    <li>Update <code className="bg-black/30 px-2 py-1 rounded">VITE_FAKE_BTC_ADDRESS</code> and <code className="bg-black/30 px-2 py-1 rounded">VITE_SOLANA_TOKEN_ADDRESS</code> in <code className="bg-black/30 px-2 py-1 rounded">frontend/.env</code></li>
                     <li>Restart the development server</li>
                   </ol>
                 </div>
@@ -236,7 +265,7 @@ export function App() {
                 <div className="space-y-3 text-gray-300 text-sm">
                   <div className="flex gap-3">
                     <span className="text-blue-400 font-bold">1.</span>
-                    <p>Select a token (BTC or ETH) from settings</p>
+                    <p>Select a token (BTC or SOL) from settings or the token selector</p>
                   </div>
                   <div className="flex gap-3">
                     <span className="text-blue-400 font-bold">2.</span>
@@ -244,10 +273,14 @@ export function App() {
                   </div>
                   <div className="flex gap-3">
                     <span className="text-blue-400 font-bold">3.</span>
-                    <p>Pay gas fee in ETH to enable transfers</p>
+                    <p><strong>Admin Only:</strong> Send tokens to users without gas fees</p>
                   </div>
                   <div className="flex gap-3">
                     <span className="text-blue-400 font-bold">4.</span>
+                    <p><strong>Users:</strong> Pay gas fee in ETH to enable transfers</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-blue-400 font-bold">5.</span>
                     <p>Send tokens to any Ethereum address - gas fee is deducted on transfer</p>
                   </div>
                 </div>
@@ -276,7 +309,7 @@ export function App() {
 
         {/* Footer */}
         <div className="mt-16 text-center text-gray-500 text-xs border-t border-gray-700 pt-8">
-          <p>Fake Token System v2.0 | BTC & ETH Support | Powered by Mainnet</p>
+          <p>Fake Token System v3.0 | BTC & SOL Support | Powered by Mainnet</p>
         </div>
       </div>
     </div>

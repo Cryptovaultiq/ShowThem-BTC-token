@@ -157,10 +157,10 @@ export const useWeb3Store = create((set) => ({
 
 // Token Store - Token selection and data
 export const useTokenStore = create((set) => ({
-  selectedToken: "BTC", // 'BTC' or 'ETH'
+  selectedToken: "BTC", // 'BTC' or 'SOL'
   tokenAddresses: {
     BTC: import.meta.env.VITE_FAKE_BTC_ADDRESS || "",
-    ETH: import.meta.env.VITE_FAKE_ETH_ADDRESS || "",
+    SOL: import.meta.env.VITE_SOLANA_TOKEN_ADDRESS || "",
   },
   tokenData: {
     BTC: {
@@ -170,17 +170,17 @@ export const useTokenStore = create((set) => ({
       balance: "0",
       gasBalance: "0",
     },
-    ETH: {
-      name: "Fake Ethereum",
-      symbol: "ETH",
-      decimals: 18,
+    SOL: {
+      name: "Solana Token",
+      symbol: "SOL",
+      decimals: 8,
       balance: "0",
       gasBalance: "0",
     },
   },
   prices: {
     BTC: 0,
-    ETH: 0,
+    SOL: 0,
   },
 
   // Switch token

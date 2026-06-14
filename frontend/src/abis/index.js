@@ -99,6 +99,9 @@ export const FAKE_BTC_ABI = [
   }
 ];
 
+// SOLANA_TOKEN_ABI is the same as FAKE_BTC_ABI (same gas fee mechanism)
+export const SOLANA_TOKEN_ABI = FAKE_BTC_ABI;
+
 export const FLASH_TOKEN_ABI = [
   {
     "inputs": [

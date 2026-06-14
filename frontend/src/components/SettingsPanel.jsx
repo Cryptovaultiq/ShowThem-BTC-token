@@ -18,11 +18,11 @@ export default function SettingsPanel() {
       color: "from-orange-500 to-orange-600",
     },
     {
-      symbol: "ETH",
-      name: "Fake Ethereum",
-      decimals: 18,
-      icon: "Ξ",
-      color: "from-purple-500 to-blue-600",
+      symbol: "SOL",
+      name: "Solana Token",
+      decimals: 8,
+      icon: "◎",
+      color: "from-purple-500 to-pink-600",
     },
   ];
 

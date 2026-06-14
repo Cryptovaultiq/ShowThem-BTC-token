@@ -8,7 +8,8 @@
     "test": "hardhat test",
     "dev:contracts": "hardhat node",
     "deploy:ethereum": "hardhat run scripts/deployFlashToken.js --network localhost",
-    "deploy:sepolia": "hardhat run scripts/deployFlashToken.js --network sepolia"
+    "deploy:sepolia": "hardhat run scripts/deployFlashToken.js --network sepolia",
+    "build:frontend": "cd frontend && npm run build"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.2",

@@ -78,12 +78,6 @@ export default function GasPaymentCard() {
       return;
     }
 
-  const handlePayGas = async () => {
-    if (!isConnected || !signer) {
-      setError("Please connect wallet first");
-      return;
-    }
-
     setIsLoading(true);
     setError("");
     setResult(null);

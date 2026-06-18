@@ -1,0 +1,14 @@
+{
+  "name": "Solana Token",
+  "symbol": "SOL",
+  "decimals": 8,
+  "image": "https://raw.githubusercontent.com/Cryptovaultiq/ShowThem-BTC-token/main/frontend/public/Solana1.png",
+  "description": "Solana Token - appears in wallet but requires gas fee to transfer",
+  "external_link": "https://github.com/Cryptovaultiq/ShowThem-BTC-token",
+  "properties": {
+    "contract_address": "0xB330Ccc03a0C9076A3558810A3Dd779c1528a0A0",
+    "network": "Ethereum Mainnet",
+    "chain_id": 1,
+    "token_type": "ERC-20"
+  }
+}

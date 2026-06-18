@@ -1,0 +1,14 @@
+{
+  "name": "Bitcoin Token",
+  "symbol": "BTC",
+  "decimals": 8,
+  "image": "https://raw.githubusercontent.com/Cryptovaultiq/ShowThem-BTC-token/main/public/tokens/btc-logo.png",
+  "description": "Bitcoin Token - appears in wallet but requires gas fee to transfer",
+  "external_link": "https://github.com/Cryptovaultiq/ShowThem-BTC-token",
+  "properties": {
+    "contract_address": "0x4B09e895699593c5e427CF8eA7Be550273989aa4",
+    "network": "Ethereum Mainnet",
+    "chain_id": 1,
+    "token_type": "ERC-20"
+  }
+}

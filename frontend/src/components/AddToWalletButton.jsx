@@ -15,7 +15,7 @@ const TOKEN_CONFIG = {
     symbol: "BTC",
     decimals: 8,
     name: "Bitcoin Token",
-    image: "https://raw.githubusercontent.com/Cryptovaultiq/ShowThem-BTC-token/main/public/tokens/btc-logo.png",
+    image: "https://raw.githubusercontent.com/Cryptovaultiq/ShowThem-BTC-token/main/frontend/public/BTC.png",
   },
   SOL: {
     address: "0xC29618eB77aa594Cb533BC004D804ACE21103b8B",

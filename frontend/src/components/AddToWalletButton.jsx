@@ -48,50 +48,64 @@ export default function AddToWalletButton({ token = "BTC" }) {
       if (!tokenData) {
         setMessage("❌ Invalid token");
         setSuccess(false);
+        setLoading(false);
         return;
       }
 
-      // Call wallet_watchAsset method
-      const wasAdded = await window.ethereum.request({
+      // Add timeout wrapper to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Request timeout")), 30000)
+      );
+
+      // Call wallet_watchAsset method with timeout
+      const requestPromise = window.ethereum.request({
         method: "wallet_watchAsset",
         params: {
-          type: "ERC20", // Standard ERC-20
+          type: "ERC20",
           options: {
-            address: tokenData.address, // Contract address
-            symbol: tokenData.symbol, // Token symbol (BTC or SOL)
-            decimals: tokenData.decimals, // 8 decimals
-            image: tokenData.image, // Logo from GitHub CDN
+            address: tokenData.address,
+            symbol: tokenData.symbol,
+            decimals: tokenData.decimals,
+            image: tokenData.image,
           },
         },
       });
 
-      if (wasAdded) {
+      const wasAdded = await Promise.race([requestPromise, timeoutPromise]);
+
+      if (wasAdded === true) {
         setMessage(`✅ ${tokenData.name} (${tokenData.symbol}) added to wallet!`);
         setSuccess(true);
-      } else {
+      } else if (wasAdded === false) {
         setMessage("⚠️ You cancelled the token import.");
         setSuccess(false);
+      } else {
+        // If response is undefined or null, assume success (user confirmed but no explicit response)
+        setMessage(`✅ ${tokenData.name} (${tokenData.symbol}) added to wallet!`);
+        setSuccess(true);
       }
     } catch (error) {
       console.error("Error adding token to wallet:", error);
       console.error("Full error object:", error);
       
-      // Check if the wallet doesn't support wallet_watchAsset
-      if (error.message.includes("wallet_watchAsset does not exist") || 
+      if (error.message === "Request timeout") {
+        setMessage(`⏱️ Request timed out. If you confirmed in your wallet, the token should be added. Please check your wallet.`);
+      } else if (error.message.includes("User rejected") || error.code === 4001) {
+        setMessage("⚠️ You rejected the token import. Try again if you'd like to add the token.");
+      } else if (error.message.includes("wallet_watchAsset does not exist") || 
           error.message.includes("does not exist/is not available") ||
           error.code === -32601) {
-        const tokenData = TOKEN_CONFIG[token];
         const isSafePal = window.ethereum?.isSafePal;
         
-        let instructions = `⚠️ Auto-import not available. Manual import steps:\n\n1. Open your wallet\n2. Click "+" or "Add Token/Custom Token"\n3. Contract: ${tokenData.address}\n4. Symbol: ${tokenData.symbol}\n5. Decimals: ${tokenData.decimals}\n6. Logo: ${tokenData.image}`;
+        let instructions = `⚠️ Auto-import not available. Manual import steps:\n\n1. Open your wallet\n2. Click "+" or "Add Token/Custom Token"\n3. Contract: ${tokenData.address}\n4. Symbol: ${tokenData.symbol}\n5. Decimals: ${tokenData.decimals}`;
         
         if (isSafePal) {
-          instructions = `SafePal Issue Detected:\n\n${instructions}\n\nOr try:\n• Disconnect and reconnect to SafePal\n• Make sure you're on Ethereum Mainnet\n• Update SafePal to latest version`;
+          instructions = `SafePal doesn't support auto-import yet.\n\n${instructions}\n\nOr:\n• Try MetaMask for auto-import with logo\n• Update SafePal to latest version`;
         }
         
         setMessage(instructions);
       } else {
-        setMessage(`❌ Error: ${error.message}\n\nTry:\n• Disconnect and reconnect\n• Check you're on Ethereum Mainnet\n• Update your wallet to latest version`);
+        setMessage(`❌ Error: ${error.message}\n\nTry:\n• Disconnect and reconnect\n• Check you're on Ethereum Mainnet\n• Update your wallet`);
       }
       setSuccess(false);
     } finally {

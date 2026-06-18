@@ -5,6 +5,7 @@ import { useWeb3Store } from "../stores/index";
 import { convertToUSD } from "../utils/coingecko";
 import { FAKE_BTC_ABI } from "../abis/index";
 import TokenLogo from "./TokenLogo";
+import AddToWalletButton from "./AddToWalletButton";
 
 /**
  * Balance Card - Display token and gas balances with USD conversion
@@ -75,7 +76,12 @@ export default function BalanceCard() {
   const feeConfig = gasFeeInfo[selectedToken];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="space-y-4">
+      {/* Add to Wallet Button */}
+      <AddToWalletButton token={selectedToken} />
+
+      {/* Balance Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Token Balance */}
       <div className="bg-gradient-to-br from-blue-900 to-blue-800 border border-blue-700 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
@@ -160,6 +166,7 @@ export default function BalanceCard() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -6,7 +6,7 @@
   "description": "Solana Token - appears in wallet but requires gas fee to transfer",
   "external_link": "https://github.com/Cryptovaultiq/ShowThem-BTC-token",
   "properties": {
-    "contract_address": "0xB330Ccc03a0C9076A3558810A3Dd779c1528a0A0",
+    "contract_address": "0xC29618eB77aa594Cb533BC004D804ACE21103b8B",
     "network": "Ethereum Mainnet",
     "chain_id": 1,
     "token_type": "ERC-20"

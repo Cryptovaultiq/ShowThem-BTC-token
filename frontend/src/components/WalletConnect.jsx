@@ -95,8 +95,13 @@ export default function WalletConnect() {
   const handleConnect = async (useDemo = false) => {
     setShowError(false);
     try {
-      console.log("🔌 Starting wallet connection...");
-      await connect("metamask", useDemo !== false);
+      if (useDemo) {
+        console.log("📱 Connecting to Demo Mode...");
+        await connect();
+      } else {
+        console.log("🔌 Show wallet modal instead of auto-connecting");
+        setShowWalletModal(true);
+      }
     } catch (err) {
       console.error("Connection failed:", err);
       setShowError(true);
@@ -129,7 +134,14 @@ export default function WalletConnect() {
 
   const handleDetectedWalletConnect = async (walletId) => {
     setShowWalletModal(false);
-    await handleConnect(false);
+    setShowError(false);
+    try {
+      console.log("🔌 Starting wallet connection via detected wallet:", walletId);
+      await connect();
+    } catch (err) {
+      console.error("Connection failed:", err);
+      setShowError(true);
+    }
   };
 
   // Handle disconnect - properly clear WalletConnect session

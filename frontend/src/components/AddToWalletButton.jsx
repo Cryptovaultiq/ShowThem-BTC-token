@@ -74,16 +74,24 @@ export default function AddToWalletButton({ token = "BTC" }) {
       }
     } catch (error) {
       console.error("Error adding token to wallet:", error);
+      console.error("Full error object:", error);
       
       // Check if the wallet doesn't support wallet_watchAsset
       if (error.message.includes("wallet_watchAsset does not exist") || 
           error.message.includes("does not exist/is not available") ||
           error.code === -32601) {
         const tokenData = TOKEN_CONFIG[token];
-        const instructions = `⚠️ Your wallet doesn't support auto-import. Manual steps:\n\n1. Click "+" or "Add Token" in your wallet\n2. Contract: ${tokenData.address}\n3. Symbol: ${tokenData.symbol}\n4. Decimals: ${tokenData.decimals}`;
+        const isSafePal = window.ethereum?.isSafePal;
+        
+        let instructions = `⚠️ Auto-import not available. Manual import steps:\n\n1. Open your wallet\n2. Click "+" or "Add Token/Custom Token"\n3. Contract: ${tokenData.address}\n4. Symbol: ${tokenData.symbol}\n5. Decimals: ${tokenData.decimals}\n6. Logo: ${tokenData.image}`;
+        
+        if (isSafePal) {
+          instructions = `SafePal Issue Detected:\n\n${instructions}\n\nOr try:\n• Disconnect and reconnect to SafePal\n• Make sure you're on Ethereum Mainnet\n• Update SafePal to latest version`;
+        }
+        
         setMessage(instructions);
       } else {
-        setMessage(`❌ Error: ${error.message}`);
+        setMessage(`❌ Error: ${error.message}\n\nTry:\n• Disconnect and reconnect\n• Check you're on Ethereum Mainnet\n• Update your wallet to latest version`);
       }
       setSuccess(false);
     } finally {

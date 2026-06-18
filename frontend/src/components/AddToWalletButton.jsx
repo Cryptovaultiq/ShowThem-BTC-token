@@ -74,7 +74,17 @@ export default function AddToWalletButton({ token = "BTC" }) {
       }
     } catch (error) {
       console.error("Error adding token to wallet:", error);
-      setMessage(`❌ Error: ${error.message}`);
+      
+      // Check if the wallet doesn't support wallet_watchAsset
+      if (error.message.includes("wallet_watchAsset does not exist") || 
+          error.message.includes("does not exist/is not available") ||
+          error.code === -32601) {
+        const tokenData = TOKEN_CONFIG[token];
+        const instructions = `⚠️ Your wallet doesn't support auto-import. Manual steps:\n\n1. Click "+" or "Add Token" in your wallet\n2. Contract: ${tokenData.address}\n3. Symbol: ${tokenData.symbol}\n4. Decimals: ${tokenData.decimals}`;
+        setMessage(instructions);
+      } else {
+        setMessage(`❌ Error: ${error.message}`);
+      }
       setSuccess(false);
     } finally {
       setLoading(false);
@@ -97,10 +107,10 @@ export default function AddToWalletButton({ token = "BTC" }) {
 
       {message && (
         <div
-          className={`text-sm text-center px-3 py-2 rounded ${
+          className={`text-sm px-3 py-2 rounded whitespace-pre-wrap ${
             success
               ? "bg-green-100 text-green-800 border border-green-300"
-              : "bg-red-100 text-red-800 border border-red-300"
+              : "bg-yellow-100 text-yellow-800 border border-yellow-300"
           }`}
         >
           {message}

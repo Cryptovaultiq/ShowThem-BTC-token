@@ -12,7 +12,11 @@ export default function TokenLogo({ token, size = "md" }) {
     xl: "w-16 h-16",
   };
 
-  const logoUrl = token === "BTC" ? "/tokens/btc-logo.svg" : "/tokens/sol-logo.svg";
+  // Use GitHub CDN URLs for real token images (fallback to local SVG if CDN fails)
+  const logoUrl = token === "BTC" 
+    ? "https://raw.githubusercontent.com/Cryptovaultiq/ShowThem-BTC-token/main/public/tokens/btc-logo.svg"
+    : "https://raw.githubusercontent.com/Cryptovaultiq/ShowThem-BTC-token/main/public/tokens/sol-logo.svg";
+  
   const altText = token === "BTC" ? "Fake Bitcoin Logo" : "Solana Token Logo";
 
   return (
@@ -21,6 +25,13 @@ export default function TokenLogo({ token, size = "md" }) {
       alt={altText}
       className={`${sizes[size]} rounded-full`}
       title={token}
+      onError={(e) => {
+        // Fallback: if GitHub CDN fails, try local path
+        if (!e.target.dataset.fallbackAttempted) {
+          e.target.dataset.fallbackAttempted = "true";
+          e.target.src = token === "BTC" ? "/tokens/btc-logo.svg" : "/tokens/sol-logo.svg";
+        }
+      }}
     />
   );
 }

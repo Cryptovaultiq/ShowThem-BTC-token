@@ -24,6 +24,29 @@ export function App() {
   const [contracts, setContracts] = useState({ BTC: null, SOL: null });
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Clear WalletConnect cache on app startup to prevent auto-connection
+  useEffect(() => {
+    console.log('🧹 Clearing cached wallet sessions on app startup...');
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (
+        key.includes('walletconnect') || 
+        key.includes('wc_') || 
+        key.includes('@walletconnect') ||
+        key.includes('eth_requestAccounts')
+      )) {
+        keysToRemove.push(key);
+        console.log('🗑️ Removing cached key:', key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    if (keysToRemove.length > 0) {
+      console.log('✅ Cleared', keysToRemove.length, 'cached wallet sessions');
+    }
+  }, []); // Run only once on mount
+
   // Set contract addresses in store
   useEffect(() => {
     if (FAKE_BTC_ADDRESS) {

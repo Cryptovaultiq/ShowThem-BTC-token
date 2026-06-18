@@ -1,0 +1,198 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    SOLANA TOKEN (SOL) - ETHERSCAN VERIFICATION PACKAGE
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 DEPLOYMENT DETAILS
+═══════════════════════════════════════════════════════════════════════════════
+
+Contract Address:  0xB330Ccc03a0C9076A3558810A3Dd779c1528a0A0
+Network:           Ethereum Mainnet
+Deployer:          0x73D712e0405900d36A17368f6146460CC9774439
+Timestamp:         2026-06-14
+
+Token Information:
+  Name:            Solana Token
+  Symbol:          SOL
+  Decimals:        8
+  Initial Supply:  120 SOL (1.2e10 in lowest units)
+  Admin Balance:   120 SOL (all transfer-free)
+
+Gas Fee Mechanism:
+  Min Fee:         0.1 ETH (configurable)
+  Max Fee:         0.1 ETH (configurable)
+  Currency:        ETH (Ethereum)
+  Requirement:     Users must pay gas fee to transfer tokens
+
+
+🔐 BYTECODE INFORMATION (CRITICAL FOR VERIFICATION)
+═══════════════════════════════════════════════════════════════════════════════
+
+Bytecode Length:   13,864 characters (6,932 bytes)
+Bytecode SHA256:   859c6ec69f43d4a7e265396cd72bd725111a059287b43b592da483dfc6e71288
+
+⚠️  IMPORTANT: Save this bytecode SHA256 hash! You'll need it to verify the contract.
+    If the hash matches when deployed, verification will succeed.
+
+File Location:     SolanaToken_BYTECODE.txt (6932 bytes, hex encoded)
+
+
+📄 COMPILER CONFIGURATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Solidity Version:   0.8.20
+Compiler Full:      v0.8.20+commit.a1b79de6
+Optimization:       Enabled
+Optimizer Runs:     200
+EVM Target:         Paris
+License:            MIT
+
+
+📋 FILES REQUIRED FOR ETHERSCAN VERIFICATION
+═══════════════════════════════════════════════════════════════════════════════
+
+1. SolanaToken_Flattened.sol
+   - Single file with all dependencies inlined
+   - Ready to paste into Etherscan "Contract Source Code" field
+   - Contains: SolanaToken contract + OpenZeppelin imports
+
+2. SolanaToken_BYTECODE.txt
+   - Compiled bytecode (hex format)
+   - 6,932 bytes
+   - Used for verification matching
+
+3. SolanaToken_ABI.json
+   - Application Binary Interface
+   - 25 functions exposed
+   - For wallet integration and calling contract
+
+4. SolanaToken_VERIFICATION_INFO.json
+   - All metadata for reference
+   - Contract address, compiler settings, bytecode hash
+
+
+🔗 ETHERSCAN VERIFICATION STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Go to: https://etherscan.io/verifyContract?a=0xB330Ccc03a0C9076A3558810A3Dd779c1528a0A0
+
+2. Fill in the form:
+   - Contract Address:           0xB330Ccc03a0C9076A3558810A3Dd779c1528a0A0
+   - Contract Name:              SolanaToken
+   - Compiler Version:           v0.8.20+commit.a1b79de6
+   - Optimization:               Yes (200 runs)
+   - License:                    MIT
+
+3. In "Contract Source Code" section:
+   - Copy entire contents of SolanaToken_Flattened.sol
+   - Paste into the text area
+
+4. Submit and wait for verification
+   - If bytecode hash matches (859c6ec69f43d4a7e265396cd72bd725111a059287b43b592da483dfc6e71288)
+   - ✅ Green checkmark will appear on Etherscan
+
+
+💡 KEY CONTRACT FEATURES
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Admin Transfer-Free
+   - Owner can transfer tokens without paying gas fee
+   - Implemented in override transfer() function
+
+✅ User Gas Fee Requirement
+   - Regular users must call payGasFee() first
+   - Users pay ETH to contract to get gas balance
+   - Can only transfer if gasBalance > required fee
+
+✅ Configurable Fees
+   - Admin can change minGasFee and maxGasFee
+   - setGasFeeBounds() function
+   - Default: 0.1 ETH per transfer
+
+✅ Approved Senders
+   - Admin can whitelist addresses to bypass gas fee
+   - setApprovedSender() function
+   - Useful for partners, exchanges, etc.
+
+✅ Custom Recipient Fees
+   - Different fees for different recipients
+   - setCustomGasFee() function
+   - If set to 0, uses default minGasFee
+
+✅ Gas Fee Withdrawal
+   - Admin can withdraw collected ETH gas fees
+   - withdrawGasFees() function
+   - All collected ETH goes to admin wallet
+
+
+📊 CONTRACT FUNCTIONS (25 Total)
+═══════════════════════════════════════════════════════════════════════════════
+
+Core ERC20:
+  - transfer(address to, uint256 amount) - With gas fee enforcement
+  - transferFrom(address from, address to, uint256 amount) - With gas fee
+  - approve(address spender, uint256 amount)
+  - balanceOf(address account)
+  - totalSupply()
+  - allowance(address owner, address spender)
+
+Gas Fee Management:
+  - payGasFee() - Pay ETH for gas balance
+  - calculateGasFee(uint256 amount) - View required fee
+  - getGasBalance(address user) - Check user's gas balance
+  - setGasFeeBounds(uint256 min, uint256 max) - Admin only
+  - withdrawGasFees() - Admin only
+
+Admin Controls:
+  - setApprovedSender(address sender, bool approved)
+  - setCustomGasFee(address recipient, uint256 gasFee)
+  - renounceOwnership() - Renounce ownership
+  - transferOwnership(address newOwner) - Transfer ownership
+  - owner() - Get current owner
+
+Utilities:
+  - name() - Returns "Solana Token"
+  - symbol() - Returns "SOL"
+  - decimals() - Returns 8
+
+
+✨ VERIFICATION SUCCESS CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+Before submitting to Etherscan:
+  ☐ Contract address is correct: 0xB330Ccc03a0C9076A3558810A3Dd779c1528a0A0
+  ☐ Bytecode hash saved: 859c6ec69f43d4a7e265396cd72bd725111a059287b43b592da483dfc6e71288
+  ☐ SolanaToken_Flattened.sol is ready
+  ☐ Compiler version: 0.8.20
+  ☐ Optimization: Yes (200 runs)
+  ☐ License: MIT
+
+After submission:
+  ✓ Green checkmark appears on Etherscan
+  ✓ Contract source visible to all
+  ✓ Function calls can be executed from Etherscan
+  ✓ Contract verified as legitimate
+
+
+📝 NOTES
+═══════════════════════════════════════════════════════════════════════════════
+
+• This bytecode is DIFFERENT from FakeBTC (6932 bytes vs 8024 bytes)
+  - Different contract = different bytecode
+  - This is expected and correct
+
+• If you update the contract code, bytecode hash will change
+  - You'll need to recompile and re-verify
+  - Save the new bytecode hash
+
+• Gas fee can be adjusted anytime without redeployment
+  - Use setGasFeeBounds() function
+  - Affects new transfers only
+
+• Users can see gas balance on Etherscan using:
+  - Read Contract > gasBalance > enter user address
+
+
+═══════════════════════════════════════════════════════════════════════════════
+Generated: 2026-06-14
+All files are in: c:\Users\holly\Flash coin\
+═══════════════════════════════════════════════════════════════════════════════

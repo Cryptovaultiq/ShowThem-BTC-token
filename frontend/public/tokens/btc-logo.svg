@@ -1,0 +1,10 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <circle cx="50" cy="50" r="50" fill="#f7931a"/>
+  
+  <!-- BTC Symbol -->
+  <g transform="translate(50, 50)">
+    <!-- Letter B -->
+    <text x="-8" y="15" font-size="40" font-weight="bold" font-family="Arial, sans-serif" fill="white">₿</text>
+  </g>
+</svg>

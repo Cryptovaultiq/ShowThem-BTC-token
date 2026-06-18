@@ -4,6 +4,7 @@ import { useTokenStore } from "../stores/index";
 import { useWeb3Store } from "../stores/index";
 import { convertToUSD } from "../utils/coingecko";
 import { FAKE_BTC_ABI } from "../abis/index";
+import TokenLogo from "./TokenLogo";
 
 /**
  * Balance Card - Display token and gas balances with USD conversion
@@ -77,7 +78,10 @@ export default function BalanceCard() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Token Balance */}
       <div className="bg-gradient-to-br from-blue-900 to-blue-800 border border-blue-700 rounded-lg p-6">
-        <div className="text-sm text-blue-300 mb-2">Token Balance</div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-blue-300">Token Balance</div>
+          <TokenLogo token={selectedToken} size="lg" />
+        </div>
         <div className="text-3xl font-bold text-white mb-2">{balance.toFixed(8)}</div>
         <div className="text-sm text-blue-200">{selectedToken}</div>
         <div className="text-xs text-blue-300 mt-2">{usdValue}</div>

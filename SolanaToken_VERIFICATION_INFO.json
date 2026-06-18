@@ -1,0 +1,14 @@
+{
+  "contract_address": "0xB330Ccc03a0C9076A3558810A3Dd779c1528a0A0",
+  "contract_name": "SolanaToken",
+  "compiler": "0.8.20",
+  "compiler_full": "v0.8.20+commit.a1b79de6",
+  "optimization": true,
+  "optimizer_runs": 200,
+  "evm_version": "paris",
+  "bytecode_hash": "859c6ec69f43d4a7e265396cd72bd725111a059287b43b592da483dfc6e71288",
+  "bytecode_size_bytes": 6932,
+  "flattened_file": "SolanaToken_Flattened.sol",
+  "abi_file": "SolanaToken_ABI.json",
+  "bytecode_file": "SolanaToken_BYTECODE.txt"
+}
